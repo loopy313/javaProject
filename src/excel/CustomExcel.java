@@ -29,8 +29,8 @@ public class CustomExcel {
 
 	private int cnt=0;
 	private ArrayList[] li = new ArrayList[]{new ArrayList<MemberVO>(),new ArrayList<BookVO>(),new ArrayList<CatVO>(),new ArrayList<RentVO>()};
-	private String excelPathHead =System.getProperty("user.dir")+"\\Library";
-	private String excelPathTale =".xlsx"; // D:\\hnDir\\test"+(this.cnt++)+".xlsx 최근 엑셀파일
+	private String excelPathHead =System.getProperty("user.dir")+"\\Library0.xlsx";
+//	private String excelPathTale =".xlsx"; // D:\\hnDir\\test"+(this.cnt++)+".xlsx 최근 엑셀파일
 	private XSSFWorkbook workBook=null;
 	/**
 	 * 
@@ -43,10 +43,11 @@ public class CustomExcel {
 		createBookSheet(db);
 		createCatVOSheet(db);
 		createRentVOSheet(db);
-		File file = new File(excelPathHead+(cnt+=1)+excelPathTale); // 상단에 링크 
-
+		File file = new File(excelPathHead); // 상단에 링크 
+		FileInputStream fis = null;
 		FileOutputStream fos = null;
 		try{
+			fis = new FileInputStream(file);
 			fos = new FileOutputStream(file);
 			System.out.println();
 			this.workBook.write(fos);
@@ -69,7 +70,7 @@ public class CustomExcel {
 		String[] memColumn={"회원테이블","회원아이디   ",
 				"회원 비밀번호 ","회원이름 ",
 				"회원마일리지  ","회원블랙 여부",
-				"관리자 여부"
+				"관리자 여부","회원 이메일"
 		};
 		XSSFSheet sheet2 = this.workBook.createSheet(memColumn[0]);
 		XSSFRow   row = sheet2.createRow(0);		//행,로우row,레코드 생성
@@ -97,7 +98,7 @@ public class CustomExcel {
 			cell = row.createCell(j++);
 			cell.setCellValue(mv.isAdmin());
 			cell = row.createCell(j++);
-			cell.setCellValue(mv.isAdmin());
+			cell.setCellValue(mv.getEmail());
 		}
 	}
 	private void createBookSheet(DBClass db){
@@ -193,8 +194,8 @@ public class CustomExcel {
 			XSSFSheet sheet =workBook.getSheetAt(i);
 			System.out.println("----------------- DB 로딩중 ("+(i+1)+"/4)-----------------");
 			for(int j=1;j<sheet.getPhysicalNumberOfRows();j++){
-				Object[] obj = new Object[sheet.getRow(j).getPhysicalNumberOfCells()];
-				for(int k=0;k<sheet.getRow(j).getPhysicalNumberOfCells();k++){
+				Object[] obj = new Object[sheet.getRow(0).getPhysicalNumberOfCells()];
+				for(int k=0;k<sheet.getRow(0).getPhysicalNumberOfCells();k++){
 					obj[k] = cellType(sheet.getRow(j).getCell(k).getCellType(),sheet.getRow(j).getCell(k));
 				}
 				try{
@@ -256,7 +257,10 @@ public class CustomExcel {
 
 		case XSSFCell.CELL_TYPE_STRING:	obj = new String(k.toString());
 		break;
-
+		
+		case XSSFCell.CELL_TYPE_ERROR:	obj = new String(k.toString());
+		break;
+		
 		default: obj= Double.valueOf(k.toString()).intValue();// String(k.toString());
 
 		}
@@ -268,7 +272,7 @@ public class CustomExcel {
 		}
 		else{
 			try {
-				workBook=new XSSFWorkbook(new FileInputStream(new File((excelPathHead+(cnt)+excelPathTale))));
+				workBook=new XSSFWorkbook(new FileInputStream(new File((excelPathHead))));
 				readCommonExcell();
 			} catch (IOException e) {
 				System.out.println("입출력 오류 도서관DB 로딩오류입니다.");
